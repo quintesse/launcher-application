@@ -68,6 +68,7 @@
     <module>services/openshift-service-api</module>
     <module>services/openshift-service-impl</module>
     <module>addons/osio-addon</module>
+    <module>creator</module>
     <module>web</module>
   </modules>
 
@@ -542,6 +543,15 @@
       </plugins>
     </pluginManagement>
   </build>
+
+  <repositories>
+    <repository>
+      <id>jcenter</id>
+      <name>jcenter-bintray</name>
+      <url>https://jcenter.bintray.com</url>
+    </repository>
+  </repositories>
+
   <scm>
     <connection>scm:git:git://github.com/fabric8-launcher/launcher-backend.git</connection>
     <developerConnection>scm:git:git@github.com:fabric8-launcher/launcher-backend.git</developerConnection>
