@@ -1,38 +1,27 @@
 package io.fabric8.launcher.creator.core.catalog
 
-import io.fabric8.launcher.creator.core.BaseProperties
+import io.fabric8.launcher.creator.core.BasePropertiesX
 import io.fabric8.launcher.creator.core.Properties
 import io.fabric8.launcher.creator.core.resource.Resources
 
 interface Generator : CatalogItem {
 }
 
-open class BaseGeneratorProps(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    val application: String by _map
-    val subFolderName: String? by _map
-    val serviceName: String by _map
-    val routeName: String by _map
+interface BaseGeneratorProps : CatalogItemProps {
+    val application: String
+    val subFolderName: String?
+    val serviceName: String
+    val routeName: String
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: BaseGeneratorProps.Builder.() -> kotlin.Unit = {}): BaseGeneratorProps {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return BaseGeneratorProps(newobj._map)
-        }
-        fun list(vararg block: BaseGeneratorProps.Builder.() -> kotlin.Unit): List<BaseGeneratorProps> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var application: String by _map
-        var subFolderName: String? by _map
-        var serviceName: String by _map
-        var routeName: String by _map
-    }
+    data class Data(
+            override val application: String,
+            override val subFolderName: String? = null,
+            override val serviceName: String,
+            override val routeName: String
+    ) : BaseGeneratorProps
 }
 
-open class BaseGeneratorExtra(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
+open class BaseGeneratorExtra(_map: Properties = LinkedHashMap()) : BasePropertiesX(_map) {
     var image: String by _map
     var service: String by _map
 
@@ -47,12 +36,12 @@ open class BaseGeneratorExtra(_map: Properties = LinkedHashMap()) : BaseProperti
         }
     }
 
-    class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
+    class Builder(_map: Properties = LinkedHashMap()) : BasePropertiesX(_map) {
         var image: String by _map
         var service: String by _map
     }
 }
 
 abstract class BaseGenerator : BaseCatalogItem(), Generator {
-    abstract override fun apply(resources: Resources, props: Properties, extra: Properties): Resources
+    abstract override fun apply(resources: Resources, props: CatalogItemProps, extra: Properties): Resources
 }

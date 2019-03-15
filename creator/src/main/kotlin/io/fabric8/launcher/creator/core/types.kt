@@ -1,5 +1,12 @@
 package io.fabric8.launcher.creator.core
 
+fun Map<String, Any?>.pathExists(path: String): Boolean {
+    val parts = path.split('.')
+    val parents = parts.subList(0, parts.size - 1)
+    val parent = parents.fold(this as Map<String, Any>?) { acc, s -> acc?.get(s) as Map<String, Any>? }
+    return parent != null && parent.containsKey(parts.last())
+}
+
 fun Map<String, Any?>.pathGet(path: String): Any? {
     val parts = path.split('.')
     val parents = parts.subList(0, parts.size - 1)
@@ -30,7 +37,7 @@ fun MutableMap<String, Any?>.pathPut(path: String, value: Any): MutableMap<Strin
 
 typealias Properties = MutableMap<String, Any?>
 
-abstract class BaseProperties(val _map: Properties = LinkedHashMap()) : Properties by _map {
+abstract class BasePropertiesX(val _map: Properties = LinkedHashMap()) : Properties by _map {
 
     protected inline fun <reified T> ensureObject(obj: Any, klazz: (Properties) -> T): T {
         if (obj is T) {
@@ -123,112 +130,68 @@ fun envOf(map: Map<String, String>?, vararg pairs: Pair<String, String>): Enviro
 
 // Enums
 
-open class Enumeration(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    val id: String by _map
-    val name: String by _map
-    val description: String? by _map
-    val icon: String? by _map
-    open val metadata: Properties by _map
+interface Enumeration {
+    val id: String
+    val name: String
+    val description: String?
+    val icon: String?
+    val metadata: Properties?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: Enumeration.Builder.() -> kotlin.Unit = {}): Enumeration {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return Enumeration(newobj._map)
-        }
-
-        fun list(vararg block: Enumeration.Builder.() -> kotlin.Unit): List<Enumeration> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var id: String by _map
-        var name: String by _map
-        var description: String? by _map
-        var icon: String? by _map
-        var metadata: Properties by _map
-    }
+    data class Data(
+            override val id: String,
+            override val name: String,
+            override val description: String? = null,
+            override val icon: String? = null,
+            override val metadata: Properties? = null
+    ) : Enumeration
 }
+
+typealias Enums = Map<String, List<Enumeration>>
 
 // Misc
 
-class Runtime(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    val name: String by _map
-    val version: String? by _map
+interface Runtime {
+    val name: String
+    val version: String?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: Runtime.Builder.() -> kotlin.Unit = {}): Runtime {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return Runtime(newobj._map)
-        }
-        fun list(vararg block: Runtime.Builder.() -> kotlin.Unit): List<Runtime> {
-            return block.map { build(block = it) }
-        }
-    }
+    data class Data(
+            override val name: String,
+            override val version: String?
+    ) : Runtime
 
-    class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var name: String by _map
-        var version: String? by _map
-    }
 }
 
 fun toRuntime(arg: String?): Runtime? {
     if (arg != null) {
         val parts = arg.split('/', limit = 2);
-        val rt = Runtime.build {
-            name = parts[0]
-            if(parts.size > 1) version = parts[1]
-        }
+        val rt = Runtime.Data(
+            name = parts[0],
+            version = if (parts.size > 1) parts[1] else null
+        )
         return rt
     } else {
         return null
     }
 }
 
-class MavenCoords(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    val groupId: String by _map
-    val artifactId: String by _map
-    val version: String by _map
+interface MavenCoords {
+    val groupId: String
+    val artifactId: String
+    val version: String
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: MavenCoords.Builder.() -> kotlin.Unit = {}): MavenCoords {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return MavenCoords(newobj._map)
-        }
-
-        fun list(vararg block: MavenCoords.Builder.() -> kotlin.Unit): List<MavenCoords> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var groupId: String by _map
-        var artifactId: String by _map
-        var version: String by _map
-    }
+    data class Data(
+            override val groupId: String,
+            override val artifactId: String,
+            override val version: String
+    ) : MavenCoords
 }
 
-class NodejsCoords(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    val name: String by _map
-    val version: String by _map
+interface NodejsCoords {
+    val name: String
+    val version: String
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: NodejsCoords.Builder.() -> kotlin.Unit = {}): NodejsCoords {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return NodejsCoords(newobj._map)
-        }
-
-        fun list(vararg block: NodejsCoords.Builder.() -> kotlin.Unit): List<NodejsCoords> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var name: String by _map
-        var version: String? by _map
-    }
+    data class Data(
+            override val name: String,
+            override val version: String
+    ) : NodejsCoords
 }

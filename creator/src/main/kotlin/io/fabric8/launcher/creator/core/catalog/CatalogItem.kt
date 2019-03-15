@@ -4,6 +4,7 @@ import io.fabric8.launcher.creator.core.Properties
 import io.fabric8.launcher.creator.core.resource.Resources
 import io.fabric8.launcher.creator.core.template.Transformer
 import io.fabric8.launcher.creator.core.template.transformFiles
+import io.fabric8.launcher.creator.core.toJsonObject
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -12,8 +13,11 @@ val PATH_POM: Path = Paths.get("pom.xml")
 val PATH_PACKAGE: Path = Paths.get("package.json")
 val PATH_MERGE_PACKAGE: Path = Paths.get("merge/package.json")
 
+interface CatalogItemProps {
+}
+
 interface CatalogItem {
-    fun apply(resources: Resources, props: Properties, extra: Properties): Resources
+    fun apply(resources: Resources, props: CatalogItemProps, extra: Properties): Resources
 }
 
 abstract class BaseCatalogItem() : CatalogItem {
@@ -66,4 +70,8 @@ abstract class BaseCatalogItem() : CatalogItem {
     protected fun mergePackageJson(source: Path = PATH_MERGE_PACKAGE, target: Path = PATH_PACKAGE) {
         TODO("not implemented")
     }
+}
+
+inline fun <reified T: CatalogItemProps> T.toProperties(): Properties {
+    return toJsonObject(this)
 }

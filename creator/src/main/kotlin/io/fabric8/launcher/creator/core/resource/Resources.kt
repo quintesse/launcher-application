@@ -1,150 +1,78 @@
 package io.fabric8.launcher.creator.core.resource
 
-import io.fabric8.launcher.creator.core.BaseProperties
 import io.fabric8.launcher.creator.core.Properties
 
-open class NamedProperties(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    var name: String? by _map
+interface NamedProperties {
+    var name: String?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: NamedProperties.Builder.() -> kotlin.Unit = {}): NamedProperties {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return NamedProperties(newobj._map)
-        }
-        fun list(vararg block: NamedProperties.Builder.() -> kotlin.Unit): List<NamedProperties> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var name: String? by _map
-    }
+    data class Data(
+            override var name: String? = null
+    ) : NamedProperties
 }
 
-class Metadata(_map: Properties = LinkedHashMap()) : NamedProperties(_map) {
-    var annotations: Properties? by _map
-    var labels: Properties? by _map
+interface Metadata : NamedProperties {
+    var annotations: Properties?
+    var labels: Properties?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: Metadata.Builder.() -> kotlin.Unit = {}): Metadata {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return Metadata(newobj._map)
-        }
-        fun list(vararg block: Metadata.Builder.() -> kotlin.Unit): List<Metadata> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : NamedProperties.Builder(_map) {
-        var annotations: Properties? by _map
-        var labels: Properties? by _map
-    }
+    data class Data(
+            override var name: String? = null,
+            override var annotations: Properties? = null,
+            override var labels: Properties? = null
+    ) : Metadata
 }
 
-class Parameter(_map: Properties = LinkedHashMap()) : NamedProperties(_map) {
-    var description: String? by _map
-    var displayName: String? by _map
-    var value: Any? by _map
-    var required: Boolean? by _map
+interface Parameter : NamedProperties {
+    var description: String?
+    var displayName: String?
+    var value: Any?
+    var required: Boolean?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: Parameter.Builder.() -> kotlin.Unit = {}): Parameter {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return Parameter(newobj._map)
-        }
-        fun list(vararg block: Parameter.Builder.() -> kotlin.Unit): List<Parameter> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : NamedProperties.Builder(_map) {
-        var description: String? by _map
-        var displayName: String? by _map
-        var value: Any? by _map
-        var required: Boolean? by _map
-    }
+    data class Data(
+            override var name: String? = null,
+            override var description: String? = null,
+            override var displayName: String? = null,
+            override var value: Any? = null,
+            override var required: Boolean? = null
+    ) : Parameter
 }
 
-open class Resource(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    var apiVersion: String? by _map
-    var kind: String? by _map
-    var metadata: Metadata? by _map
+interface Resource {
+    var apiVersion: String?
+    var kind: String?
+    var metadata: Metadata?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: Resource.Builder.() -> kotlin.Unit = {}): Resource {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return Resource(newobj._map)
-        }
-        fun list(vararg block: Resource.Builder.() -> kotlin.Unit): List<Resource> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-        var apiVersion: String? by _map
-        var kind: String? by _map
-        var metadata: Metadata? by _map
-
-        init {
-            if (get("metadata") != null) metadata = ensureObject(metadata as Metadata, ::Metadata)
-        }
-    }
+    data class Data(
+            override var apiVersion: String? = null,
+            override var kind: String? = null,
+            override var metadata: Metadata? = null
+    ) : Resource
 }
 
-class ListResource(_map: Properties = LinkedHashMap()) : Resource(_map) {
-    var items: List<Resource>? by _map
+interface ListResource : Resource {
+    var items: List<Resource>?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: ListResource.Builder.() -> kotlin.Unit = {}): ListResource {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return ListResource(newobj._map)
-        }
-        fun list(vararg block: ListResource.Builder.() -> kotlin.Unit): List<ListResource> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : Resource.Builder(_map) {
-        var items: List<Resource>? by _map
-
-        init {
-            if (get("items") != null) items = ensureList(items as List<Any>, ::Resource)
-        }
-    }
+    data class Data(
+            override var apiVersion: String? = null,
+            override var kind: String? = null,
+            override var metadata: Metadata? = null,
+            override var items: List<Resource>? = null
+    ) : ListResource
 }
 
-class TemplateResource(_map: Properties = LinkedHashMap()) : Resource(_map) {
-    var objects: List<Resource>? by _map
-    var parameters: List<Parameter>? by _map
+interface TemplateResource : Resource {
+    var objects: List<Resource>?
+    var parameters: List<Parameter>?
 
-    companion object {
-        fun build(_map: Properties = LinkedHashMap(), block: TemplateResource.Builder.() -> kotlin.Unit = {}): TemplateResource {
-            val newobj = Builder(_map)
-            block.invoke(newobj)
-            return TemplateResource(newobj._map)
-        }
-        fun list(vararg block: TemplateResource.Builder.() -> kotlin.Unit): List<TemplateResource> {
-            return block.map { build(block = it) }
-        }
-    }
-
-    open class Builder(_map: Properties = LinkedHashMap()) : Resource.Builder(_map) {
-        var objects: List<Resource>? by _map
-        var parameters: List<Parameter>? by _map
-
-        init {
-            if (get("objects") != null) objects = ensureList(objects as List<Any>, ::Resource)
-            if (get("parameters") != null) parameters = ensureList(parameters as List<Any>, ::Parameter)
-        }
-    }
+    data class Data(
+            override var apiVersion: String? = null,
+            override var kind: String? = null,
+            override var metadata: Metadata? = null,
+            override var objects: List<Resource>? = null,
+            override var parameters: List<Parameter>? = null
+    ) : TemplateResource
 }
 
-class Resources(private var res: Resource = Resource()) {
+class Resources(private var res: Resource = Resource.Data()) {
 
     companion object {
         // Returns an array of all the resources found in the given object.
@@ -226,7 +154,14 @@ class Resources(private var res: Resource = Resource()) {
     // Returns the parameters (if any)
     val parameters: List<Parameter>
         get() {
-            return res["parameters"] as List<Parameter>? ?: listOf<Parameter>()
+            val r = res
+            if (r is TemplateResource) {
+                val ps = r.parameters
+                if (ps != null) {
+                    return ps
+                }
+            }
+            return listOf<Parameter>()
         }
 
     // Finds a parameter by name
@@ -304,7 +239,8 @@ class Resources(private var res: Resource = Resource()) {
             if (resparams != null) {
                 newparams.addAll(resparams)
             }
-            this.toTemplate().json["parameters"] = resparams as Any
+            this.toTemplate()
+            (res as TemplateResource).parameters = resparams
         }
 
         return this
@@ -316,7 +252,7 @@ class Resources(private var res: Resource = Resource()) {
         val newparams = mutableListOf<Parameter>()
         newparams.addAll(toTemplate().parameters)
         newparams.add(param)
-        res["parameters"] = newparams
+        (res as TemplateResource).parameters = newparams
         return this
     }
 

@@ -5,24 +5,35 @@ import io.fabric8.launcher.creator.core.NodejsCoords
 import io.fabric8.launcher.creator.core.Properties
 import io.fabric8.launcher.creator.core.catalog.BaseGenerator
 import io.fabric8.launcher.creator.core.catalog.BaseGeneratorProps
+import io.fabric8.launcher.creator.core.catalog.CatalogItemProps
+import io.fabric8.launcher.creator.core.catalog.toProperties
 import io.fabric8.launcher.creator.core.resource.*
 import io.fabric8.launcher.creator.core.template.transformers.cases
 
-open class LanguageNodejsProps(_map: Properties = LinkedHashMap()) : BaseGeneratorProps(_map) {
-    val builderImage: String by _map
-    val env: Environment? by _map
+interface LanguageNodejsProps : BaseGeneratorProps {
+    val builderImage: String
+    val env: Environment?
+
+    data class Data(
+            override val application: String,
+            override val subFolderName: String? = null,
+            override val serviceName: String,
+            override val routeName: String,
+            override val builderImage: String,
+            override val env: Environment? = null
+    ) : LanguageNodejsProps
 }
 
 open class LanguageNodejsExtra(_map: Properties = LinkedHashMap()) : BasePlatformExtra(_map) {
 }
 
 class LanguageNodejs : BaseGenerator() {
-    override fun apply(resources: Resources, props: Properties, extra: Properties): Resources {
-        val lnprops = LanguageNodejsProps(props)
+    override fun apply(resources: Resources, props: CatalogItemProps, extra: Properties): Resources {
+        val lnprops = props as LanguageNodejsProps
         // Check if the service already exists, so we don't create it twice
         if (resources.service(lnprops.serviceName) == null) {
             copy()
-            transform("gap", cases(lnprops));
+            transform("gap", cases(lnprops.toProperties()));
             val res = newApp(
                     lnprops.serviceName,
                     lnprops.application,

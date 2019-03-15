@@ -2,28 +2,33 @@ package io.fabric8.launcher.creator.catalog.generators
 
 import io.fabric8.launcher.creator.core.*
 import io.fabric8.launcher.creator.core.catalog.BaseGenerator
+import io.fabric8.launcher.creator.core.catalog.CatalogItemProps
 import io.fabric8.launcher.creator.core.catalog.enumItemNN
+import io.fabric8.launcher.creator.core.catalog.toProperties
 import io.fabric8.launcher.creator.core.resource.*
 import io.fabric8.launcher.creator.core.template.transformers.cases
 
-class PlatformAngularProps(_map: Properties = LinkedHashMap()) : LanguageNodejsProps(_map) {
-    val nodejs: NodejsCoords by _map
+interface PlatformAngularProps : LanguageNodejsProps {
+    val nodejs: NodejsCoords
 }
 
 class PlatformAngularExtra(_map: Properties = LinkedHashMap()) : LanguageNodejsExtra(_map) {
 }
 
 class PlatformAngular : BaseGenerator() {
-    override fun apply(resources: Resources, props: Properties, extra: Properties): Resources {
-        val paprops = PlatformAngularProps(props)
+    override fun apply(resources: Resources, props: CatalogItemProps, extra: Properties): Resources {
+        val paprops = props as PlatformAngularProps
         val env = envOf(
                 paprops.env,
                 "OUTPUT_DIR" to "dist/" + paprops.application
         )
         val lprops = propsOf(
-                paprops,
+                paprops.toProperties(),
                 "env" to env,
                 "builderImage" to BUILDER_NODEJS_WEB
+        )
+        val lprops = LanguageNodejsProps.Data(
+                
         )
 
         // Check if the service already exists, so we don't create it twice

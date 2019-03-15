@@ -1,9 +1,6 @@
 package io.fabric8.launcher.creator.core.resource
 
-import io.fabric8.launcher.creator.core.BaseProperties
-import io.fabric8.launcher.creator.core.Enumeration
-import io.fabric8.launcher.creator.core.Properties
-import io.fabric8.launcher.creator.core.propsOf
+import io.fabric8.launcher.creator.core.*
 
 const val BUILDER_JAVA = "registry.access.redhat.com/redhat-openjdk-18/openjdk18-openshift";
 const val BUILDER_JAVAEE = "openshift/wildfly:latest";
@@ -13,60 +10,53 @@ const val BUILDER_NODEJS_WEB = "nodeshift/centos7-s2i-web-app";
 const val IMAGE_MYSQL = "mysql";
 const val IMAGE_POSTGRESQL = "postgresql";
 
-class BuilderImageMetadata(_map: Properties = LinkedHashMap()) : BaseProperties(_map) {
-    val language: String by _map
-    val isBuilder: Boolean by _map
-}
+typealias BuilderImage = Enumeration
 
-class BuilderImage(_map: Properties = LinkedHashMap()) : Enumeration(_map) {
-    override val metadata: BuilderImageMetadata by _map
-}
-
-val builderImages: List<BuilderImage> = listOf(
-        propsOf(
-                "id" to BUILDER_JAVA,
-                "name" to "Java Code Builder",
-                "metadata" to propsOf(
+val builderImages = listOf(
+        Enumeration.Data(
+                id = BUILDER_JAVA,
+                name = "Java Code Builder",
+                metadata = propsOf(
                         "language" to "java",
                         "isBuilder" to true
                 )
         ),
-        propsOf(
-                "id" to BUILDER_JAVAEE,
-                "name" to "JavaEE Code Builder",
-                "metadata" to propsOf(
+        Enumeration.Data(
+                id = BUILDER_JAVAEE,
+                name = "JavaEE Code Builder",
+                metadata = propsOf(
                         "language" to "java",
                         "isBuilder" to true
                 )
         ),
-        propsOf(
-                "id" to BUILDER_NODEJS_WEB,
-                "name" to "Web App Node.js Code Builder",
-                "metadata" to propsOf(
+        Enumeration.Data(
+                id = BUILDER_NODEJS_WEB,
+                name = "Web App Node.js Code Builder",
+                metadata = propsOf(
                         "language" to "nodejs",
                         "isBuilder" to true
                 )
         ),
-        propsOf(
-                "id" to BUILDER_NODEJS_APP,
-                "name" to "Generic Node.js Code Builder",
-                "metadata" to propsOf(
+        Enumeration.Data(
+                id = BUILDER_NODEJS_APP,
+                name = "Generic Node.js Code Builder",
+                metadata = propsOf(
                         "language" to "nodejs",
                         "isBuilder" to true
                 )
         )
-) as List<BuilderImage>
+)
 
 val databaseImages: List<BuilderImage> = listOf(
-        propsOf(
-                "id" to IMAGE_MYSQL,
-                "name" to "MySQL Database"
+        Enumeration.Data(
+                id = IMAGE_MYSQL,
+                name = "MySQL Database"
         ),
-        propsOf(
-                "id" to IMAGE_POSTGRESQL,
-                "name" to "PostgreSQL Database"
+        Enumeration.Data(
+                id = IMAGE_POSTGRESQL,
+                name = "PostgreSQL Database"
         )
-) as List<BuilderImage>
+)
 
 val images: List<BuilderImage> = databaseImages + builderImages;
 
@@ -75,5 +65,5 @@ fun builderById(builderId: String): BuilderImage? {
 }
 
 fun builderByLanguage(language: String): BuilderImage? {
-    return builderImages.find { e -> e.metadata.language == language }
+    return builderImages.find { e -> e.metadata?.get("language") == language }
 }

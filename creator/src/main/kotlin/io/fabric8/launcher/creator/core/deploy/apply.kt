@@ -35,7 +35,7 @@ fun readDeployment(deploymentFile: Path): DeploymentDescriptor {
     if (Files.exists(deploymentFile)) {
         try {
             deploymentFile.toFile().inputStream().use {
-                val obj = Parser.default().parse(it) as JsonObject
+                val obj = fromJsonStream(it)
                 return DeploymentDescriptor.build(obj)
             }
         } catch (ex: Exception) {
@@ -51,8 +51,7 @@ fun readDeployment(deploymentFile: Path): DeploymentDescriptor {
 // deployment was written to the given file
 fun writeDeployment(deploymentFile: Path, deployment: DeploymentDescriptor) {
     try {
-        val obj = if (deployment._map is JsonObject) deployment._map else JsonObject(deployment._map)
-        val str = obj.toJsonString(true)
+        val str = toJsonString(deployment._map)
         deploymentFile.toFile().writeText(str)
     } catch (ex: Exception) {
         System.err.println("Failed to write deployment file ${deploymentFile}: ${ex}")
@@ -66,7 +65,7 @@ fun readResources(resourcesFile: Path): Resources {
     if (Files.exists(resourcesFile)) {
         try {
             resourcesFile.toFile().inputStream().use {
-                val map = Yaml().load<Properties>(it)
+                val map = fromYamlStream(it)
                 return Resources(Resource.build(map))
             }
         } catch (ex: Exception) {
@@ -82,7 +81,7 @@ fun readResources(resourcesFile: Path): Resources {
 // resources were written to the given file
 fun writeResources(resourcesFile: Path, res: Resources) {
     try {
-        val str = Yaml().dumpAsMap(res.json._map)
+        val str = toYamlString(res.json._map)
         resourcesFile.toFile().writeText(str)
     } catch (ex: Exception) {
         System.err.println("Failed to write resources file ${resourcesFile}: ${ex}")
